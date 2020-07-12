@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MDN 语言助手 MDN Language Helper
 // @namespace    https://github.com/moonflame/jump-to-chinese-page
-// @version      0.3.1
+// @version      0.3.2
 // @description  检测当前浏览的 MDN 非中文页面，自动跳转到对应中文版页面。适用于 Tampermonkey Chrome 扩展
 // @author       Rayan Zhang
 // @match        *://developer.mozilla.org/*
@@ -11,25 +11,34 @@
 
 (function() {
     'use strict';
-    let scriptName = "Language Helper";
+    let changeLang = true;
 
-    let urlOriginal = window.location.href;
-    let urlArrDivided = urlOriginal.split('/');
-    let urlProcessing;
+    // The page was accessed by navigating into the history.
+    if (window.performance.navigation.type == window.performance.navigation.TYPE_BACK_FORWARD) {
+        changeLang = false;
+    }
 
-    if (urlArrDivided[2] == 'developer.mozilla.org') { // MDN
-        if (urlArrDivided[3] == 'zh-CN') {
-            // return;
-        } else {
-            urlArrDivided[3] = 'zh-CN';
-            urlProcessing = urlArrDivided.join('/'); // developer.mozilla.org/zh-CN/...
-            // urlArrDivided = urlProcessing.split('#'); // after language change, parameters after "#" is useless
-            window.location.href = urlProcessing; // load new page
-            // return;
+    if (changeLang == true) {
+        let urlOriginal = window.location.href;
+        let urlArrDivided = urlOriginal.split('/');
+        let urlProcessing;
+
+        if (urlArrDivided[2] == 'developer.mozilla.org') { // MDN
+            if (urlArrDivided[3] == 'zh-CN') {
+                // return;
+            } else {
+                urlArrDivided[3] = 'zh-CN';
+                urlProcessing = urlArrDivided.join('/'); // developer.mozilla.org/zh-CN/...
+                // urlArrDivided = urlProcessing.split('#'); // after language change, parameters after "#" is useless
+                window.location.href = urlProcessing; // load new page
+                // return;
+            }
         }
     }
 
+    return;
     // append a list named "Language Helper"
+    let scriptName = "Language Helper";
     let el = document.createElement("li");
     let temp1, temp2, temp3, temp4;
     el.setAttribute("class", "top-level-entry-container");
@@ -64,6 +73,6 @@
     temp2.appendChild(temp3);
     temp3.appendChild(temp4);
 
-    let currentDiv = document.getElementsByClassName("main-nav");
-    currentDiv[0].children[0].appendChild(el, currentDiv[0]);
+    let currentDiv = document.getElementsByClassName("main-menu");
+    currentDiv[0].appendChild(el, currentDiv[0]);
 })();

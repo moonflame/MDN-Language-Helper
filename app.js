@@ -11,33 +11,46 @@
 
 (function() {
     'use strict';
-    let changeLang = true;
-
-    // The page was accessed by navigating into the history.
-    if (window.performance.navigation.type == window.performance.navigation.TYPE_BACK_FORWARD) {
-        changeLang = false;
-        return;
-    }
-
-    let form = document.getElementsByClassName('language-menu')[0];
-    let select = document.getElementById('select_language');
+    let isChangeLang = true; // flag to determine whether to change language
     let options = document.getElementById('select_language').children;
-    let submitButton = document.getElementsByClassName('language-menu')[0].getElementsByTagName('button')[0];
-    if (options[0].value === 'zh-CN') {
-        changeLang = false;
+
+    // if the page was accessed by navigating into the history, return.
+    if (window.performance.navigation.type == window.performance.navigation.TYPE_BACK_FORWARD) {
+        isChangeLang = false;
         return;
     }
 
+    // if the current language is the target language, return.
+    if (options[0].value === 'zh-CN') {
+        isChangeLang = false;
+        return;
+    }
 
-    if (changeLang == true) {
+    // if the target language is not included in languages available, return.
+    for (let el of options) {
+        if (el.value.includes('zh-CN') === true) {
+            isChangeLang = true;
+            break;
+        }
+        isChangeLang = false;
+    }
 
-        for (let el of options) {
-            if (el.value.includes('zh-CN')) {
-                select.value = el.value;
-                form.requestSubmit(submitButton);
+    // access the target language page
+    if (isChangeLang === true) {
+        let urlOriginal = window.location.href;
+        let urlArrDivided = urlOriginal.split('/');
+        let urlProcessing;
+
+        if (urlArrDivided[2] === 'developer.mozilla.org') { // MDN
+            if (urlArrDivided[3] === 'zh-CN') {
+                return;
+            } else {
+                urlArrDivided[3] = 'zh-CN';
+                urlProcessing = urlArrDivided.join('/'); // developer.mozilla.org/zh-CN/...
+                // urlArrDivided = urlProcessing.split('#'); // after language change, parameters after "#" is useless
+                window.location.href = urlProcessing; // load new page
                 return;
             }
         }
-
     }
 })();

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MDN 语言助手 MDN Language Helper
 // @namespace    https://github.com/moonflame/jump-to-chinese-page
-// @version      1.0.0
+// @version      0.4.0
 // @description  检测当前浏览的 MDN 非中文页面，自动跳转到对应中文版页面。适用于 Tampermonkey Chrome 扩展
 // @author       Rayan Zhang
 // @match        *://developer.mozilla.org/*
@@ -11,46 +11,41 @@
 
 (function() {
     'use strict';
-    let isChangeLang = true; // flag to determine whether to change language
     let options = document.getElementById('select_language').children;
+    let targetUrl = '';
 
-    // if the page was accessed by navigating into the history, return.
-    if (window.performance.navigation.type == window.performance.navigation.TYPE_BACK_FORWARD) {
-        isChangeLang = false;
+    // won't continue when navigating into the history or using navigation buttons
+    if (isCertainNavigationType()) {
         return;
     }
 
-    // if the current language is the target language, return.
-    if (options[0].value === 'zh-CN') {
-        isChangeLang = false;
+    if (isAlreadyPreferredLanguage()) {
         return;
     }
 
-    // if the target language is not included in languages available, return.
-    for (let el of options) {
-        if (el.value.includes('zh-CN') === true) {
-            isChangeLang = true;
-            break;
-        }
-        isChangeLang = false;
+    if (!isPreferredLanguageAvailable()) {
+        return;
     }
 
-    // access the target language page
-    if (isChangeLang === true) {
-        let urlOriginal = window.location.href;
-        let urlArrDivided = urlOriginal.split('/');
-        let urlProcessing;
+    window.location.assign(targetUrl);
+    return;
 
-        if (urlArrDivided[2] === 'developer.mozilla.org') { // MDN
-            if (urlArrDivided[3] === 'zh-CN') {
-                return;
-            } else {
-                urlArrDivided[3] = 'zh-CN';
-                urlProcessing = urlArrDivided.join('/'); // developer.mozilla.org/zh-CN/...
-                // urlArrDivided = urlProcessing.split('#'); // after language change, parameters after "#" is useless
-                window.location.href = urlProcessing; // load new page
-                return;
+
+    function isCertainNavigationType() {
+        return window.performance.navigation.type == window.performance.navigation.TYPE_BACK_FORWARD;
+    }
+
+    function isAlreadyPreferredLanguage() {
+        return options[0].value.toLowerCase() === 'zh-CN'.toLowerCase();
+    }
+
+    function isPreferredLanguageAvailable() {
+        for (let el of options) {
+            if (el.value.toLowerCase().includes('zh-CN'.toLowerCase()) === true) {
+                targetUrl = document.location.origin + el.value;
+                return true;
             }
         }
+        return false;
     }
 })();

@@ -6,7 +6,6 @@
 // @author       Rayan Zhang
 // @match        *://developer.mozilla.org/*
 // @grant        none
-// @run-at       document-start // The script will be injected as fast as possible.
 // ==/UserScript==
 
 (function() {
@@ -23,7 +22,7 @@
         return;
     }
 
-    if (!isPreferredLanguageAvailable()) {
+    if (!processUrl()) {
         return;
     }
 
@@ -39,7 +38,7 @@
         return options[0].value.toLowerCase() === 'zh-CN'.toLowerCase();
     }
 
-    function isPreferredLanguageAvailable() {
+    function processUrl() {
         for (let el of options) {
             if (el.value.toLowerCase().includes('zh-CN'.toLowerCase()) === true) {
                 targetUrl = document.location.origin + el.value;
